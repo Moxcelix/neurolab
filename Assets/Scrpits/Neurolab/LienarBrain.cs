@@ -10,19 +10,24 @@ namespace Core.Neurolab
 
         public Input[] Inputs => _inputs;
 
-        public double[] Output => _outputs;
+        public double[] Outputs => _outputs;
 
         public LienarBrain(int[] layers)
         {
             _neurons = new Neuron[layers.Length][];
             _inputs = new Input[layers[0]];
-            _outputs = new double[layers[^0]];
+            _outputs = new double[layers[^1]];
 
             var random = new Random();
 
             static double Sigmoid(double x)
             {
                 return 1.0 / (1.0 + Math.Pow(Math.E, -x));
+            }
+
+            for(int i = 0; i< _inputs.Length; i++)
+            {
+                _inputs[i] = new Input();
             }
 
             for (int i = 0; i < layers.Length; i++)
@@ -43,7 +48,10 @@ namespace Core.Neurolab
 
                     if (i == 0)
                     {
-                        _neurons[i][j].Assign(_inputs[j], random.NextDouble() * 2 - 1);
+                        for (int k = 0; k < _inputs.Length; k++)
+                        {
+                            _neurons[i][j].Assign(_inputs[k], random.NextDouble() * 2 - 1);
+                        }
 
                         continue;
                     }
