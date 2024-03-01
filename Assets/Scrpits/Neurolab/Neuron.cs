@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Core.Neurolab
@@ -10,11 +11,18 @@ namespace Core.Neurolab
         private readonly List<ISignal> _assigns;
         private readonly List<double> _weights;
 
+        private readonly float _depressionDelta;
+        private readonly float _potentiationDelta;
+
         public double Value { get; private set; }
 
-        public Neuron(ActivationFunction activationFunction)
+        public Neuron(ActivationFunction activationFunction,
+            float depressionDelta, float potentiationDelta)
         {
             _activationFunction = activationFunction;
+            _depressionDelta = depressionDelta;
+            _potentiationDelta = potentiationDelta;
+
             _assigns = new List<ISignal>();
             _weights = new List<double>();
         }
@@ -27,7 +35,7 @@ namespace Core.Neurolab
 
         public void SetWeights(double[] weights)
         {
-            if(weights.Length != _assigns.Count) 
+            if (weights.Length != _assigns.Count)
             {
                 throw new System.ArgumentException(
                     "The number of input weights doesn't match the assings count.");
@@ -39,6 +47,13 @@ namespace Core.Neurolab
 
         public void Update()
         {
+            CalculateValue();
+            LongTermImpact();
+            CorrectWeights();
+        }
+
+        private void CalculateValue()
+        {
             double sum = 0;
 
             for (int i = 0; i < _assigns.Count; i++)
@@ -47,6 +62,36 @@ namespace Core.Neurolab
             }
 
             Value = _activationFunction(sum);
+        }
+
+        private void LongTermImpact()
+        {
+            static bool IsActive(double value) => value > 0.5;
+
+            if (!IsActive(Value))
+            {
+                return;
+            }
+
+            for (int i = 0; i < _assigns.Count; i++)
+            {
+                if (IsActive(_assigns[i].Value))
+                {
+                    _weights[i] += _potentiationDelta;
+                }
+                else
+                {
+                    _weights[i] -= _depressionDelta;
+                }
+            }
+        }
+
+        private void CorrectWeights()
+        {
+            for (int i = 0; i < _assigns.Count; i++)
+            {
+                _weights[i] = Math.Clamp(_weights[i], -1, 1);
+            }
         }
     }
 }
