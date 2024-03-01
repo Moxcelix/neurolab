@@ -13,15 +13,28 @@ namespace Core.Neurolab
 
         private readonly double _depressionDelta;
         private readonly double _potentiationDelta;
+        private readonly double _energyDelta;
+        private readonly double _energyThreshold;
+        private readonly double _energySaturation;
+        private readonly double _energyRecoveringDelta;
+
+        private double _energyLevel = 1.0f;
+        private bool _isRecovering = false;
 
         public double Value { get; private set; }
 
         public Neuron(ActivationFunction activationFunction,
-            double depressionDelta, double potentiationDelta)
+            double depressionDelta, double potentiationDelta,
+            double energyDelta, double energyThreshold, 
+            double energyRecoveringDelta, double energySaturation)
         {
             _activationFunction = activationFunction;
             _depressionDelta = depressionDelta;
             _potentiationDelta = potentiationDelta;
+            _energyDelta = energyDelta;
+            _energyThreshold = energyThreshold;
+            _energyRecoveringDelta = energyRecoveringDelta;
+            _energySaturation = energySaturation;
 
             _assigns = new List<ISignal>();
             _weights = new List<double>();
@@ -37,7 +50,7 @@ namespace Core.Neurolab
         {
             if (weights.Length != _assigns.Count)
             {
-                throw new System.ArgumentException(
+                throw new ArgumentException(
                     "The number of input weights doesn't match the assings count.");
             }
 
@@ -50,6 +63,8 @@ namespace Core.Neurolab
             CalculateValue();
             LongTermImpact();
             CorrectWeights();
+            CalculateEnergy();
+
         }
 
         private void CalculateValue()
@@ -91,6 +106,34 @@ namespace Core.Neurolab
             for (int i = 0; i < _assigns.Count; i++)
             {
                 _weights[i] = Math.Clamp(_weights[i], -1, 1);
+            }
+        }
+
+        private void CalculateEnergy()
+        {
+            if (_isRecovering)
+            {
+                Value = 1;
+
+                _energyLevel += _energyRecoveringDelta;
+
+                if(_energyLevel > _energySaturation)
+                {
+                    _energyLevel = _energySaturation;
+
+                    _isRecovering = false;
+                }
+
+                return;
+            }
+
+            var level = Math.Clamp(Value, 0, 1);
+
+            _energyLevel -= level * _energyDelta;
+
+            if (_energyLevel < _energyThreshold)
+            {
+                _isRecovering = true;
             }
         }
     }
