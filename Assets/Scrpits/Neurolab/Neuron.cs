@@ -11,13 +11,13 @@ namespace Core.Neurolab
         private readonly List<ISignal> _assigns;
         private readonly List<double> _weights;
 
-        private readonly float _depressionDelta;
-        private readonly float _potentiationDelta;
+        private readonly double _depressionDelta;
+        private readonly double _potentiationDelta;
 
         public double Value { get; private set; }
 
         public Neuron(ActivationFunction activationFunction,
-            float depressionDelta, float potentiationDelta)
+            double depressionDelta, double potentiationDelta)
         {
             _activationFunction = activationFunction;
             _depressionDelta = depressionDelta;
