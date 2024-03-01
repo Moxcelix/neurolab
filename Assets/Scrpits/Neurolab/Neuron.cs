@@ -17,6 +17,7 @@ namespace Core.Neurolab
         private readonly double _energyThreshold;
         private readonly double _energySaturation;
         private readonly double _energyRecoveringDelta;
+        private readonly double _sensetivity;
 
         private double _energyLevel = 1.0f;
         private bool _isRecovering = false;
@@ -26,7 +27,7 @@ namespace Core.Neurolab
         public Neuron(ActivationFunction activationFunction,
             double depressionDelta, double potentiationDelta,
             double energyDelta, double energyThreshold, 
-            double energyRecoveringDelta, double energySaturation)
+            double energyRecoveringDelta, double energySaturation, double sensetivity)
         {
             _activationFunction = activationFunction;
             _depressionDelta = depressionDelta;
@@ -35,6 +36,7 @@ namespace Core.Neurolab
             _energyThreshold = energyThreshold;
             _energyRecoveringDelta = energyRecoveringDelta;
             _energySaturation = energySaturation;
+            _sensetivity = sensetivity;
 
             _assigns = new List<ISignal>();
             _weights = new List<double>();
@@ -76,7 +78,7 @@ namespace Core.Neurolab
                 sum += _assigns[i].Value * _weights[i];
             }
 
-            Value = _activationFunction(sum);
+            Value = _activationFunction(sum * _sensetivity);
         }
 
         private void LongTermImpact()
