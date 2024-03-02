@@ -15,6 +15,7 @@ public class SimpleAnimal : MonoBehaviour
     private CharacterController _characterController;
 
     private readonly int _directions = 4;
+    private readonly int _feelings = 4;
     private readonly int _observations = 4;
 
     private float _counter = 0;
@@ -27,16 +28,19 @@ public class SimpleAnimal : MonoBehaviour
 
         _lienarBrain = new LienarBrain(
             new int[] {
-                _observations + _memory + 1,    // Input layer
-                15,                             // Hidden layer
-                30,                             // Hidden layer
-                15,                             // Hidden layer
-                _directions + _memory });       // Output layer
+                _observations + _feelings + _memory + 1,    // Input layer
+                15,                                         // Hidden layer
+                30,                                         // Hidden layer
+                30,                                         // Hidden layer
+                15,                                         // Hidden layer
+                _directions + _memory });                   // Output layer
     }
 
     private void Update()
     {
         double DistanceToSence(float distance) => System.Math.Pow(1.0 - distance / 10.0, 2);
+        double SpeedToSence(float speed) => System.Math.Pow(speed / 2.0, 2);
+        double WaveSignal(double signal, double frequency) => System.Math.Sin(frequency * _counter) * signal;
 
         _counter += Time.deltaTime;
 
@@ -48,10 +52,14 @@ public class SimpleAnimal : MonoBehaviour
         }
 
         _lienarBrain.Inputs[_memory].Value = Mathf.Sin(_counter * _frequency);
-        _lienarBrain.Inputs[_memory + 1].Value = DistanceToSence(HitDirection(transform.forward));
-        _lienarBrain.Inputs[_memory + 2].Value = DistanceToSence(HitDirection(transform.right));
-        _lienarBrain.Inputs[_memory + 3].Value = DistanceToSence(HitDirection(-transform.forward));
-        _lienarBrain.Inputs[_memory + 4].Value = DistanceToSence(HitDirection(-transform.right));
+        _lienarBrain.Inputs[_memory + 1].Value = WaveSignal(DistanceToSence(HitDirection(transform.forward)), _frequency);
+        _lienarBrain.Inputs[_memory + 2].Value = WaveSignal(DistanceToSence(HitDirection(transform.right)), _frequency);
+        _lienarBrain.Inputs[_memory + 3].Value = WaveSignal(DistanceToSence(HitDirection(-transform.forward)), _frequency);
+        _lienarBrain.Inputs[_memory + 4].Value = WaveSignal(DistanceToSence(HitDirection(-transform.right)), _frequency);
+        _lienarBrain.Inputs[_memory + 5].Value = WaveSignal(SpeedToSence(FeelMoveDirection(transform.forward)), _frequency);
+        _lienarBrain.Inputs[_memory + 6].Value = WaveSignal(SpeedToSence(FeelMoveDirection(transform.right)), _frequency);
+        _lienarBrain.Inputs[_memory + 7].Value = WaveSignal(SpeedToSence(FeelMoveDirection(-transform.forward)), _frequency);
+        _lienarBrain.Inputs[_memory + 8].Value = WaveSignal(SpeedToSence(FeelMoveDirection(-transform.right)), _frequency);
 
         _lienarBrain.Update();
 
@@ -67,6 +75,11 @@ public class SimpleAnimal : MonoBehaviour
     private void Move(Vector3 direction, float deltaTime)
     {
         _characterController.Move(direction * deltaTime);
+    }
+
+    private float FeelMoveDirection(Vector3 direction)
+    {
+        return Vector3.Dot(_characterController.velocity, direction);
     }
 
     private float HitDirection(Vector3 direction)

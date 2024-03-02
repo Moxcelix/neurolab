@@ -38,11 +38,11 @@ namespace Core.Neurolab
                 {
                     _neurons[i][j] = new Neuron(
                         activationFunction: Sigmoid,
-                        depressionDelta: random.NextDouble() * 0.05,
-                        potentiationDelta: random.NextDouble() * 0.05,
+                        depressionDelta: random.NextDouble() * 0.01,
+                        potentiationDelta: random.NextDouble() * 0.01,
                         energyDelta: random.NextDouble() * 0.05,
                         energyThreshold: random.NextDouble() * 0.5,
-                        energyRecoveringDelta: random.NextDouble() * 0.01,
+                        energyRecoveringDelta: random.NextDouble() * 0.1,
                         energySaturation: random.NextDouble() * 0.5 + 0.5,
                         sensetivity: random.NextDouble() * 10);
 
